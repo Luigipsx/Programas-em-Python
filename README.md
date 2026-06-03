@@ -1,2 +1,2 @@
 # Programas-em-Python
-Alguns programas de POO feitos por mim
+Alguns programas desenvolvidos utilizando python 
