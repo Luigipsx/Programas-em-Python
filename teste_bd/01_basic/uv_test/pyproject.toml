@@ -1,0 +1,21 @@
+[project]
+name = "uv-test"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "palomarohweder", email = "palomarohweder@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "mysql-connector-python>=26.7.0",
+    "pony>=0.7.20",
+    "pymysql>=1.2.0",
+]
+
+[project.scripts]
+uv-test = "uv_test:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"

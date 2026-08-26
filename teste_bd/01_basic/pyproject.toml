@@ -1,0 +1,15 @@
+[project]
+name = "01-basic"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pony>=0.7.20",
+    "pymysql>=1.2.0",
+]
+
+[tool.uv.workspace]
+members = [
+    "uv_test",
+]
