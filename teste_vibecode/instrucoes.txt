@@ -1,0 +1,215 @@
+Desenvolva um sistema web para auxiliar estudantes na organização de uma festa no IFC Campus Blumenau. O sistema deverá permitir planejar os alimentos vendidos, organizar as doações de insumos, distribuir as tarefas entre os participantes e definir os preços de venda.
+
+Entregue uma aplicação funcional, com persistência dos dados, seguindo os requisitos abaixo.
+
+## 1. Tecnologias e organização
+
+- Utilize Python e Streamlit para desenvolver a aplicação.
+- Utilize `uv` para gerenciar as dependências e o ambiente virtual.
+- Utilize SQLAlchemy, com classes mapeadas pelo ORM, para representar e persistir as entidades.
+- Configure suporte a SQLite para desenvolvimento e testes locais e a MySQL para produção.
+- Permita selecionar o banco por uma variável de ambiente, sem alterar o código.
+- Armazene as credenciais do MySQL em variáveis de ambiente. Não coloque senhas no código.
+- Utilize `.env` no ambiente local e disponibilize um `.env.example` com valores fictícios.
+- Prepare a configuração para posterior publicação no Streamlit Community Cloud: https://share.streamlit.io/. Explique como fornecer as configurações de produção pelos mecanismos de segredos da plataforma.
+- Coloque todo o código Python dentro de `src/`.
+- Mantenha na raiz os arquivos de configuração, documentação e dependências, incluindo `pyproject.toml`, `uv.lock`, `.gitignore` e `README.md`.
+- Organize o código em módulos de interface, modelos e conexão com o banco, evitando concentrar toda a aplicação em um único arquivo.
+
+## 2. Contexto e escopo
+
+A festa contará com alimentos preparados a partir de insumos doados. Os organizadores precisam saber:
+
+- Quais alimentos serão vendidos e seus preços.
+- Quantas porções pretendem produzir.
+- Quais insumos serão necessários e em quais quantidades.
+- Quem se comprometeu a doar os insumos.
+- Quais doações já foram recebidas e o que ainda falta.
+- Quais pessoas trabalharão na festa, em quais funções e horários.
+
+O escopo inicial é o planejamento de uma única festa. Não implemente pagamentos on-line, emissão fiscal ou controle de vendas realizadas.
+
+## 3. Entidades e relacionamentos
+
+Implemente as seguintes entidades com identificadores próprios e os relacionamentos necessários.
+
+### Alimento
+
+Representa um produto que será vendido na festa.
+
+Campos:
+- Nome.
+- Descrição.
+- Preço de venda por porção.
+- Quantidade de porções planejadas.
+- Situação: disponível ou indisponível para venda.
+
+### Insumo
+
+Representa um ingrediente ou material necessário, incluindo embalagens.
+
+Campos:
+- Nome.
+- Descrição.
+- Unidade de medida, como kg, g, L, mL ou unidade.
+
+### Composição do alimento
+
+Relaciona alimentos e insumos, permitindo que um alimento utilize vários insumos e que um mesmo insumo seja utilizado em vários alimentos.
+
+Campos:
+- Alimento.
+- Insumo.
+- Quantidade do insumo necessária por porção, expressa na unidade cadastrada para o insumo.
+
+Essa associação deve ser uma classe persistente, pois possui informações próprias.
+
+### Doador
+
+Representa a pessoa ou organização que fornecerá insumos.
+
+Campos:
+- Nome.
+- Tipo: pessoa ou organização.
+- Contato, opcional.
+- Observações.
+
+### Doação
+
+Registra o compromisso de doação de um insumo por um doador.
+
+Campos:
+- Doador.
+- Insumo.
+- Quantidade prometida.
+- Quantidade recebida.
+- Data prevista para entrega, opcional.
+- Observações.
+
+Um doador poderá registrar várias doações. Cada doação deverá estar vinculada a um único insumo, permitindo registrar separadamente diferentes itens doados.
+
+A situação da doação deverá ser calculada a partir das quantidades: pendente, parcialmente recebida ou recebida.
+
+### Participante
+
+Representa uma pessoa que trabalhará na festa.
+
+Campos:
+- Nome.
+- Vínculo: aluno, responsável por aluno, servidor ou outro.
+- Contato, opcional.
+- Observações.
+
+O cadastro de participante deverá ser independente do cadastro de doador, pois uma pessoa pode exercer ambos os papéis.
+
+### Tarefa
+
+Representa uma atividade de organização ou execução da festa.
+
+Campos:
+- Nome.
+- Descrição.
+- Local ou setor, opcional.
+
+Exemplos: preparo de alimentos, atendimento, caixa, montagem e limpeza.
+
+### Escala de trabalho
+
+Relaciona um participante a uma tarefa em determinado período.
+
+Campos:
+- Participante.
+- Tarefa.
+- Data e hora de início.
+- Data e hora de término.
+- Observações.
+
+Um participante poderá assumir várias tarefas, desde que os horários não se sobreponham.
+
+## 4. Páginas e funcionalidades
+
+Crie páginas de CRUD — cadastrar, consultar, editar e excluir — para todas as entidades, incluindo composição dos alimentos e escalas de trabalho.
+
+A interface deverá:
+
+- Utilizar navegação clara pela barra lateral.
+- Apresentar formulários com rótulos em português.
+- Exibir registros em tabelas com identificação compreensível.
+- Permitir busca por nome e filtros relevantes.
+- Utilizar seletores para relacionamentos, evitando exigir que o usuário digite identificadores.
+- Solicitar confirmação antes de excluir registros.
+- Exibir mensagens claras de sucesso, validação e erro.
+- Atualizar as informações exibidas após cada operação.
+
+Na página de alimentos, permita consultar e gerenciar a composição de cada produto.
+
+## 5. Painel de planejamento
+
+Crie uma página inicial com:
+
+- Quantidade de alimentos cadastrados.
+- Total de porções planejadas.
+- Quantidade de participantes.
+- Resumo das doações por situação.
+- Lista de tarefas e escalas.
+
+Apresente também uma tabela de planejamento dos insumos contendo:
+
+- Insumo e unidade de medida.
+- Quantidade total necessária.
+- Quantidade prometida pelos doadores.
+- Quantidade efetivamente recebida.
+- Quantidade ainda sem compromisso de doação.
+- Quantidade ainda necessária para completar o recebimento.
+
+Calcule a necessidade de cada insumo somando, para todos os alimentos, a quantidade por porção multiplicada pelo número de porções planejadas.
+
+Calcule os déficits com valor mínimo zero e apresente eventuais excedentes separadamente. Não some quantidades de insumos diferentes em um único indicador.
+
+Exiba a receita bruta potencial, calculada pela soma do preço de venda de cada alimento multiplicado pela quantidade de porções planejadas. Identifique esse valor como estimativa, pois ele depende da venda de todas as porções.
+
+## 6. Regras de negócio e validações
+
+- Campos obrigatórios não podem ficar vazios.
+- Quantidades e preços não podem ser negativos.
+- A quantidade de insumo por porção deve ser maior que zero.
+- A quantidade de porções planejadas deve ser um número inteiro não negativo.
+- Não permita repetir o mesmo insumo na composição de um alimento; permita editar a associação existente.
+- Todas as quantidades de um insumo devem utilizar sua unidade cadastrada. Não implemente conversões automáticas nesta versão.
+- Impeça a alteração da unidade de um insumo que já possua registros associados, explicando o motivo.
+- A quantidade recebida pode superar a prometida; nesse caso, registre o excedente.
+- O término de uma escala deve ser posterior ao início.
+- Impeça escalas com sobreposição de horários para o mesmo participante.
+- Preserve a integridade referencial. Bloqueie exclusões de registros utilizados em outros cadastros e informe quais vínculos precisam ser removidos.
+- Utilize `Decimal` e tipos SQL adequados para valores monetários, evitando `float`.
+- Utilize transações nas operações de escrita e execute rollback em caso de falha.
+- Como os insumos são doados, não atribua a eles um custo de compra. Não apresente a receita potencial como lucro, pois outras despesas não estão contempladas no escopo.
+
+## 7. Banco de dados e configuração
+
+- Centralize a configuração da conexão e das sessões SQLAlchemy.
+- Utilize os mesmos modelos para SQLite e MySQL.
+- Ative a verificação de chaves estrangeiras no SQLite.
+- Documente a criação inicial das tabelas.
+- Separe as sessões do banco das informações de estado da interface.
+- Não exponha credenciais nem detalhes internos sensíveis em mensagens de erro.
+
+## 8. Documentação e entrega
+
+Inclua um `README.md` que explique:
+
+- O objetivo do sistema.
+- As funcionalidades e regras principais.
+- A estrutura de pastas.
+- Os pré-requisitos.
+- Como instalar as dependências com `uv sync`.
+- Como configurar as variáveis de ambiente.
+- Como executar a aplicação com `uv run streamlit run src/app.py`.
+- Como utilizar SQLite localmente e configurar MySQL em produção.
+- Como criar as tabelas.
+- Como preparar a publicação no Streamlit Community Cloud, considerando que o MySQL será hospedado externamente.
+- As limitações da versão, incluindo a ausência de autenticação e de registro das vendas realizadas.
+
+Configure o `.gitignore` para ignorar, no mínimo, ambiente virtual, caches Python, arquivos `.env`, segredos do Streamlit e bancos SQLite locais, preservando os arquivos de exemplo.
+
+Entregue a estrutura completa do projeto e o conteúdo dos arquivos necessários, sem trechos omitidos ou funcionalidades essenciais deixadas como exercício. Inclua verificações das regras de cálculo de insumos, situação das doações e conflito de escalas.
