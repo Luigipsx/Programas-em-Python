@@ -20,9 +20,14 @@ def database_url() -> URL:
         return URL.create("sqlite+pysqlite", database=str(path.resolve()))
     if backend != "mysql":
         raise ValidationError("DB_BACKEND deve ser sqlite ou mysql.")
-    names = ("MYSQL_HOST", "MYSQL_DATABASE", "MYSQL_USER", "MYSQL_PASSWORD")
-    if any(not os.getenv(name) for name in names):
-        raise ValidationError("Configure host, banco, usuário e senha do MySQL nas variáveis de ambiente.")
+    names = ("MYSQL_HOST", "MYSQL_DATABASE", "MYSQL_USER")
+    if any(not os.getenv(name, "").strip() for name in names):
+        raise ValidationError("Configure host, banco e usuário do MySQL nas variáveis de ambiente.")
+    if "MYSQL_PASSWORD" not in os.environ:
+        raise ValidationError(
+            "Defina MYSQL_PASSWORD no .env ou nas variáveis de ambiente. "
+            "Para um servidor local sem senha, use MYSQL_PASSWORD=."
+        )
     try:
         port = int(os.getenv("MYSQL_PORT", "3306"))
         if not 1 <= port <= 65535:

@@ -38,3 +38,23 @@ def test_invalid_backend(monkeypatch):
     monkeypatch.setenv("DB_BACKEND", "outro")
     with pytest.raises(ValidationError, match="DB_BACKEND"):
         config.database_url()
+
+
+@pytest.mark.parametrize("password", ["", None])
+def test_mysql_distinguishes_empty_and_missing_password(monkeypatch, tmp_path, password):
+    monkeypatch.setattr(config, "ROOT", tmp_path)
+    values = {"DB_BACKEND": "mysql", "MYSQL_HOST": "localhost",
+              "MYSQL_DATABASE": "festa", "MYSQL_USER": "local",
+              "MYSQL_PORT": "3306"}
+    for key, value in values.items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.delenv("MYSQL_SSL_CA", raising=False)
+    monkeypatch.delenv("MYSQL_PASSWORD", raising=False)
+    if password is None:
+        with pytest.raises(ValidationError, match="Defina MYSQL_PASSWORD"):
+            config.database_url()
+    else:
+        monkeypatch.setenv("MYSQL_PASSWORD", password)
+        url = config.database_url()
+        assert url.drivername == "mysql+pymysql"
+        assert url.password == ""

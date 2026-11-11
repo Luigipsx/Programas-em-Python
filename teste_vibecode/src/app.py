@@ -6,7 +6,9 @@ from festa.errors import StorageError, ValidationError
 from festa.services import snapshot
 from festa.ui.catalogs import CATALOGS, render_catalog
 from festa.ui.dashboard import render_dashboard
+from festa.ui.navigation import PAGES, process_route
 from festa.ui.relations import render_compositions, render_donations, render_shifts
+from festa.ui.theme import apply_theme, sidebar_brand, sidebar_footer
 
 st.set_page_config(page_title="Festa IFC · Planejamento", page_icon="🎉", layout="wide")
 
@@ -23,16 +25,20 @@ def resources():
 
 
 def main():
+    apply_theme()
+    process_route()
     with st.sidebar:
-        st.markdown("## 🎉 Festa IFC")
-        st.caption("CAMPUS BLUMENAU")
-        page = st.radio("Navegação", ["Painel", "Alimentos", "Insumos", "Composições", "Doadores",
-                                      "Doações", "Participantes", "Tarefas", "Escalas de trabalho"])
-        st.divider()
-        st.caption("Uma festa, muitas mãos.\n\nOrganize os preparativos em um só lugar.")
-        st.button("Atualizar informações", width="stretch")
+        sidebar_brand()
+        page = st.radio(
+            "Navegação", list(PAGES), key="navigation", width="stretch",
+            format_func=lambda name: f"{PAGES[name][1]}  {name}",
+        )
+        sidebar_footer()
+        st.button("Atualizar informações", icon=":material/refresh:", width="stretch")
+    st.html('<div class="festa-topline"><strong>IFC Campus Blumenau</strong>'
+            '<span>Planejamento colaborativo · uma festa, muitas mãos</span></div>')
     if "_flash" in st.session_state:
-        st.success(st.session_state.pop("_flash"))
+        st.success(st.session_state.pop("_flash"), icon=":material/check_circle:")
     try:
         factory = resources()
         data = snapshot(factory)

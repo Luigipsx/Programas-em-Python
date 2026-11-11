@@ -115,3 +115,40 @@ def test_relationship_forms_planning_and_restrictions(ui):
     assert not app.exception
     for page in ("Alimentos", "Doadores", "Participantes", "Tarefas"):
         navigate(app, page)
+
+
+
+def test_row_action_opens_editor_without_deleting(ui):
+    app, factory = ui
+    _, food_id, _, _, _ = seed(factory)
+    app.query_params["section"] = "alimentos"
+    app.query_params["record"] = str(food_id)
+    app.query_params["action"] = "delete"
+    app.run()
+    assert not app.exception
+    assert app.sidebar.radio[0].value == "Alimentos"
+    assert element(app.text_input, "Nome *").value == "Pastel"
+    assert not element(app.checkbox, "Confirmo a exclusão deste registro.").value
+    assert len(snapshot(factory)["alimentos"]) == 1
+    element(app.button, "Excluir definitivamente").click().run()
+    assert app.warning
+    assert len(snapshot(factory)["alimentos"]) == 1
+
+
+def test_table_pagination_and_search(ui):
+    app, factory = ui
+    for i in range(1, 13):
+        save_record(factory, Insumo, {"nome": f"Item {i:02}", "unidade": "kg"})
+    app.run()
+    navigate(app, "Insumos")
+    element(app.number_input, "Página").set_value(2).run()
+    assert not app.exception
+    def visible_table():
+        return next(item.proto.body for item in app.get("html") if "festa-table-shell" in item.proto.body)
+    html = visible_table()
+    assert "Item 11" in html and "Item 12" in html
+    assert "Item 01" not in html
+    element(app.text_input, "Buscar por nome ou descrição").set_value("Item 12").run()
+    assert not app.exception
+    html = visible_table()
+    assert "Item 12" in html and "Item 11" not in html

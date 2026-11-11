@@ -19,3 +19,4 @@ htmlcov/
 *.sqlite3-*
 data/
 *.log
+.preview-redesign/

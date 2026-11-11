@@ -33,6 +33,32 @@ Todas as entidades têm cadastro, consulta, edição e exclusão. Use a busca e 
 
 A exclusão requer marcar a confirmação e clicar em **Excluir definitivamente**. Registros utilizados em outros cadastros não podem ser excluídos; a mensagem indica os vínculos a remover. A interface recarrega os dados após cada alteração. Para consultar alterações feitas por outra sessão, use **Atualizar informações** na barra lateral.
 
+## Interface e acessibilidade
+
+O visual utiliza verde profundo na navegação, fundos claros, verde suave nos destaques e laranja para pontos de atenção. Os estilos estão em `src/festa/ui/assets/theme.css`, os componentes visuais em `theme.py` e as melhorias progressivas de movimento em `assets/enhancements.js`. Não há dependências adicionais nem fontes externas.
+
+As tabelas têm ordenação numérica e cronológica, paginação, exportação CSV, estados com texto e ações por linha. **Editar** abre o formulário do registro; **Excluir** abre a confirmação e nunca apaga diretamente. Em telas pequenas, as linhas viram cartões com rótulos para todos os dados. Em telas maiores, tabelas extensas têm rolagem horizontal contida.
+
+Os formulários destacam campos obrigatórios, foco, salvamento e mensagens de validação. O menu funciona por teclado, mantém a página ativa em destaque e recolhe em dispositivos menores. As animações de entrada, rolagem, cartões e interações respeitam `prefers-reduced-motion`; sem o script de animações, os dados e os controles continuam disponíveis.
+
+### Revisar o visual com dados fictícios
+
+Em um terminal:
+
+```powershell
+uv run python src/tests/preview_demo.py
+```
+
+Isso inicia uma prévia em **http://127.0.0.1:8511**, usando um SQLite temporário independente do banco da festa.
+
+Em outro terminal, com Node.js 22 ou posterior e Chrome instalado:
+
+```powershell
+node src/tests/visual_review.mjs
+```
+
+A verificação usa o Chrome sem janela, captura computador (1440 × 1000), tablet (834 × 1112) e celular (390 × 844), confere navegação, ações das tabelas, ícones, transbordamento e movimento reduzido. As capturas e o relatório ficam em `.preview-redesign/`, ignorado pelo Git. No Windows, o caminho padrão é o Chrome em `Program Files`; para outro caminho ou sistema, defina a variável `FESTA_BROWSER` com o executável do navegador. Encerre a prévia com `Ctrl+C`.
+
 ## Regras de planejamento
 
 Para cada insumo, separadamente:
@@ -74,6 +100,8 @@ Outras regras:
 ## Configuração do banco
 
 O arquivo `.env` fica na raiz. Variáveis já existentes no ambiente têm prioridade; não é necessário alterar código para trocar de banco.
+
+A aplicação carrega somente `.env`; `.env.example` é um modelo e precisa ser copiado para `.env`. Para um servidor local configurado sem senha, defina explicitamente `MYSQL_PASSWORD=`. A ausência dessa variável é tratada como configuração incompleta.
 
 | Variável | Uso |
 | --- | --- |
@@ -179,12 +207,20 @@ Utilize o MySQL externo para persistência em produção. O arquivo SQLite local
     │       ├── common.py
     │       ├── catalogs.py
     │       ├── relations.py
-    │       └── dashboard.py
+    │       ├── dashboard.py
+    │       ├── theme.py
+    │       ├── navigation.py
+    │       └── assets/
+    │           ├── theme.css
+    │           └── enhancements.js
     └── tests/
         ├── conftest.py
         ├── test_config.py
         ├── test_domain.py
-        └── test_ui.py
+        ├── test_ui.py
+        ├── test_presentation.py
+        ├── preview_demo.py
+        └── visual_review.mjs
 ```
 
 `.env`, `.venv/` e `data/festa.db` são locais e ignorados pelo Git. Todo o código Python, inclusive os testes, está em `src/`.
